@@ -1,0 +1,44 @@
+pipeline {
+    agent any
+
+    environment {
+        QUAY_REPO = 'shinoe/deployment-test-quayio'
+        IMAGE_TAG = 'latest'
+        DOCKER_CLI_EXPERIMENTAL = 'enabled'
+    }
+
+    stages {
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
+        stage('Build Image') {
+            steps {
+                sh """
+                    cd demo
+                    mvn clean package
+                    docker build -t quay.io/${QUAY_REPO}:${IMAGE_TAG} .
+                """
+            }
+        }
+
+        stage('Push image to QuayIO') {
+            steps {
+                script {
+                    sh """
+                        docker login -u shinoe -p OULwdh+ywnXGCqqUwfe4GIJWYvo2eVS3vO02QiUcsxONiWs/vVCftc1SDir6q5vPRrPpqdpWvmuAFxvN1f9pSQ== quay.io
+                        docker push quay.io/${QUAY_REPO}:${IMAGE_TAG}
+                    """
+                }
+            }
+        }
+    }
+}
