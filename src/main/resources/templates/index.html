@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo project in Kubernets</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <div class="chessboard" id="chessboard"></div>
+
+        <div id="piece-menu" style="display: none; position: absolute;">
+            <button data-piece="empty">empty</button>
+            <button data-piece="wP">White Pawn</button>
+            <button data-piece="wN">White Knight</button>
+            <button data-piece="wB">White Bishop</button>
+            <button data-piece="wR">White Rook</button>
+            <button data-piece="wQ">White Queen</button>
+            <button data-piece="wK">White King</button>
+            <button data-piece="bP">Black Pawn</button>
+            <button data-piece="bN">Black Knight</button>
+            <button data-piece="bB">Black Bishop</button>
+            <button data-piece="bR">Black Rook</button>
+            <button data-piece="bQ">Black Queen</button>
+            <button data-piece="bK">Black King</button>
+        </div>
+        
+        <div class="options">
+            
+            <div class="radio-group">
+                <h4>Board Setup</h4>
+                <label class="radio-label">
+                    <input type="radio" name="field-type" value="empty" checked>
+                    Empty Board
+                </label>
+
+                <label class="radio-label">
+                    <input type="radio" name="field-type" value="assembled">
+                    Standard Position
+                </label>
+            </div>
+
+            <div class="radio-group">
+                <h4>Current Turn</h4>
+                <label class="radio-label">
+                    <input type="radio" name="whos-turn" value="white-turn" checked>
+                    White to Move
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="whos-turn" value="black-turn">
+                    Black to Move
+                </label>
+            </div>
+
+            <div class="slider-container">
+                <h4>Analysis Depth</h4>
+                <input 
+                    type="range" 
+                    min="24" 
+                    max="248" 
+                    value="24"
+                    step="2" 
+                    class="slider" 
+                    id="depthrange"
+                >
+                <div class="depth-value">Current depth: <span id="depth-display"></span></div>
+            </div>
+
+            <div class="button-group">
+                <button id="reset-btn">Reset Board</button>
+                <button id="predict-btn">Calculate Best Move</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/script.js"></script>
+    <script src="/js/state.js"></script>
+</body>
+</html>

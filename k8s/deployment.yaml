@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quayio-deployment
+  namespace: sictedu22
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quayio-deployment
+  template:
+    metadata:
+      labels:
+        app: quayio-deployment
+    spec:
+      containers:
+        - name: deployment-test-quayio
+          image: quay.io/shinoe/deployment-test-quayio
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080

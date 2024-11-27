@@ -1,0 +1,8 @@
+.vscode/
+.mvn/
+mvnw
+mvnw.cmd
+target/
+.idea/
+.DS_STORE
+.env

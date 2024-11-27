@@ -1,0 +1,177 @@
+html, body {
+    margin: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: url('../images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: row;
+    gap: 20px;
+}
+
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 50px);
+    grid-template-rows: repeat(8, 50px);
+    width: 400px;
+    height: 400px;
+    border: 2px solid black;
+}
+
+.square {
+    width: 50px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 24px;
+    font-weight: bold;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    cursor: pointer;
+}
+
+.square.light {
+    background-color: #f0d9b5;
+}
+
+.square.dark {
+    background-color: #b58863;
+}
+.square[piece="wP"] {
+    background-image: url('../images/white-pawn.png');
+}
+
+.square[piece="wN"] {
+    background-image: url('../images/white-knight.png');
+}
+
+.square[piece="wB"] {
+    background-image: url('../images/white-bishop.png');
+}
+
+.square[piece="wR"] {
+    background-image: url('../images/white-rook.png');
+}
+
+.square[piece="wQ"] {
+    background-image: url('../images/white-queen.png');
+}
+
+.square[piece="wK"] {
+    background-image: url('../images/white-king.png');
+}
+
+.square[piece="bP"] {
+    background-image: url('../images/black-pawn.png');
+}
+
+.square[piece="bN"] {
+    background-image: url('../images/black-knight.png');
+}
+
+.square[piece="bB"] {
+    background-image: url('../images/black-bishop.png');
+}
+
+.square[piece="bR"] {
+    background-image: url('../images/black-rook.png');
+}
+
+.square[piece="bQ"] {
+    background-image: url('../images/black-queen.png');
+}
+
+.square[piece="bK"] {
+    background-image: url('../images/black-king.png');
+}
+
+.square:hover {
+    outline: 2px solid #ffcc00;
+    transition: outline 0.2s ease-in-out;
+}
+
+#piece-menu {
+    position: absolute;
+    display: none;
+    background-color: white;
+    border: 1px solid #ddd;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+#piece-menu button {
+    padding: 5px 10px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: background-color 0.3s ease;
+}
+
+#piece-menu button:hover {
+    background-color: #eee;
+}
+
+.options {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 15px;
+    align-items: flex-start;
+    background-color: rgba(255, 255, 255, 0.7);
+    padding: 15px;
+    border-radius: 10px;
+}
+
+.radio-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.radio-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.slider-container {
+    display: flex;
+    flex-direction: column;
+}
+
+.slider {
+    width: 200px;
+}
+
+.depth-value {
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.button-group button {
+    padding: 5px 10px;
+    font-size: 12px;
+    margin-top: 10px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s;
+}
+
+.button-group button:hover {
+    background-color: #45a049;
+}
