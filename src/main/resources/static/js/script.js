@@ -1,36 +1,38 @@
-
 document.addEventListener("DOMContentLoaded", () => {
-    const chessboard = document.getElementById("chessboard");
-    setupSlider('depthrange', 'depth-display');
-    createChessboard(chessboard);
-    setupRadioEventListener('field-type');
-    document.getElementById('reset-btn').addEventListener('click', resetBoard);
-    document.getElementById('predict-btn').addEventListener('click', calculateBestMove);  
-    initializeChessGrid()
+    createChessboard();
+    setupFieldListener();
+    setupSliderListener();
+    resetBoardState();
+    initializeChessGrid();
 });
 
-function setupRadioEventListener(radioName) {
-    const radioButtons = document.querySelectorAll(`input[name="${radioName}"]`);
+/* ------------------------------------------------------------------------------------- */
 
-    radioButtons.forEach((radio) => {
-        radio.addEventListener('change', (event) => {
-        if (event.target.checked) {
-            if (event.target.value === 'assembled') {
-            loadBoardState(initial_board)
-            } else if (event.target.value === 'empty') {
-            loadBoardState(empty_board)
-            }
-        }
-        });
+function setupFieldListener() {
+    const fieldButtons = document.querySelectorAll('input[name="field-type"]');
+    
+    fieldButtons.forEach((field) => {
+        field.addEventListener('change', handleFieldChange);
     });
 }
 
-function setupSlider(sliderId, displayId) {
-    const slider = document.getElementById(sliderId);
-    const display = document.getElementById(displayId);
+function handleFieldChange(event) {
+    const selectedValue = event.target.value;
+    if (selectedValue === 'assembled') {
+        loadBoardState(initial_board);
+    } else if (selectedValue === 'empty') {
+        loadBoardState(empty_board);
+    }
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+function setupSliderListener() {
+    const slider = document.getElementById('depthrange');
+    const numberDisplay = document.getElementById('depth-display');
 
     const updateDepthDisplay = () => {
-        display.textContent = slider.value;
+        numberDisplay.textContent = slider.value;
     };
 
     updateDepthDisplay();
@@ -38,108 +40,58 @@ function setupSlider(sliderId, displayId) {
     slider.addEventListener('input', updateDepthDisplay);
 }
 
-function createChessboard(container) {
-    for (let i = 0; i < 64; i++) {
-        const square = document.createElement("div");
-        square.classList.add("square");
+/* ------------------------------------------------------------------------------------- */
 
-        const row = Math.floor(i / 8);
-        const col = i % 8;
-        square.setAttribute("piece", "empty")
-        square.setAttribute("id", `${row + 1}-${col + 1}`);
-
-        if ((row + col) % 2 === 0) {
-            square.classList.add("light");
-        } else {
-            square.classList.add("dark");
+function resetBoardState() {
+    const resetButton = document.getElementById('reset-btn');
+    
+    resetButton.addEventListener('click', () => {
+        const fieldState = getFieldState();
+        
+        if (fieldState === 'assembled') {
+            loadBoardState(initial_board);
+        } else if (fieldState === 'empty') {
+            loadBoardState(empty_board);
         }
+    });
+}
 
-        container.appendChild(square);
+function getFieldState() {
+    const selectedRadio = document.querySelector('input[name="field-type"]:checked');
+    return selectedRadio ? selectedRadio.value : null;
+}
+
+/* ------------------------------------------------------------------------------------- */
+
+function createChessboard() {
+    const chessboard = document.getElementById("chessboard");
+
+    const columns = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+
+    for (let row = 8; row >= 1; row--) {
+        for (let col = 0; col < 8; col++) {
+            const squareId = `${columns[col]}${row}`;
+            const square = document.createElement("div");
+            square.className = `square ${(row + col) % 2 === 0 ? "light" : "dark"}`;
+            square.id = squareId;
+            square.dataset.piece = "empty";
+            chessboard.appendChild(square);
+        }
     }
 }
+
+/* ------------------------------------------------------------------------------------- */
 
 function loadBoardState(boardState) {
-    Object.keys(boardState).forEach((key) => {
+    Object.entries(boardState).forEach(([key, value]) => {
         const square = document.getElementById(key);
-
-        const value = boardState[key];
-        square.setAttribute("piece", value);
+        if (square) {
+            square.dataset.piece = value;
+        }
     });
 }
 
-function resetBoard() {
-
-    const radios = document.getElementsByName('field-type');
-    
-    let selectedValue;
-    for (const radio of radios) {
-        if (radio.checked) {
-            selectedValue = radio.value;
-            break;
-        }
-    }
-
-    if (selectedValue === 'assembled') {
-        loadBoardState(initial_board)
-    } else if (selectedValue === 'empty') {
-        loadBoardState(empty_board)
-    }
-}
-
-function calculateBestMove() {
-    const squares = document.querySelectorAll('.square');
-    const boardState = [];
-    const radios = document.getElementsByName('whos-turn');
-    const slider = document.getElementById('depthrange');
-    let currentTurn = 'white';
-    
-    radios.forEach(radio => {
-        if (radio.checked) {
-            currentTurn = radio.value;
-        }
-    });
-    
-    const predictionDepth = slider.value;
-    
-    squares.forEach(square => {
-        const id = square.id;
-        const piece = square.getAttribute('piece');
-        boardState.push({ id, piece });
-    });
-
-    console.log(boardState)
-
-    const requestData = {
-        boardState: boardState,
-        currentTurn: currentTurn,
-        predictionDepth: parseInt(predictionDepth)
-    };
-
-    fetch('/predict', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(requestData)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.error) {
-            alert(`Error: ${data.error}`);
-        } else {
-            alert(`The best move is: ${data.bestMove}`);
-        }
-    })
-    .catch(error => {
-        console.error("Error fetching the best move:", error);
-        alert("Error calculating the best move. Please try again.");
-    });
-}
+/* ------------------------------------------------------------------------------------- */
 
 function initializeChessGrid() {
     const gridCells = document.querySelectorAll('.square');
@@ -164,9 +116,9 @@ function initializeChessGrid() {
     }
 
     function onPieceSelect(event) {
-        const selectedPiece = event.target.getAttribute('data-piece');
+        const selectedPiece = event.target.dataset.piece;
         if (selectedPiece && activeCell) {
-            activeCell.setAttribute('piece', selectedPiece);
+            activeCell.dataset.piece = selectedPiece;
             hidePieceMenu();
         }
     }
@@ -185,6 +137,5 @@ function initializeChessGrid() {
     });
 
     pieceMenu.addEventListener('click', onPieceSelect);
-
     document.addEventListener('click', onDocumentClick);
 }

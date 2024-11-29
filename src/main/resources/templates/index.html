@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Demo project in Kubernets</title>
+    <title>Chess Deployment Demo</title>
     <link rel="stylesheet" th:href="@{/css/style.css}">
 </head>
 <body>
@@ -54,12 +54,12 @@
             </div>
 
             <div class="slider-container">
-                <h4>Analysis Depth</h4>
+                <h4>Search Depth</h4>
                 <input 
                     type="range" 
-                    min="24" 
-                    max="248" 
-                    value="24"
+                    min="2" 
+                    max="24" 
+                    value="2"
                     step="2" 
                     class="slider" 
                     id="depthrange"
@@ -76,5 +76,6 @@
 
     <script src="/js/script.js"></script>
     <script src="/js/state.js"></script>
+    <script src="/js/request.js"></script>
 </body>
 </html>
