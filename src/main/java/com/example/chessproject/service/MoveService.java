@@ -2,6 +2,7 @@ package com.example.chessproject.service;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -10,39 +11,96 @@ import org.springframework.stereotype.Service;
 @Service
 public class MoveService {
 
-    public List<Map<String, String>> LegalMove(Map<String, String> boardState) {
+    public List<Map<String, String>> legalMove(String whosTurn, Map<String, String> boardState) {
         List<Map<String, String>> allPossibleMoves = new ArrayList<>();
+        String currentPlayerPrefix = whosTurn.equals("white-turn") ? "w" : "b";
 
         for (Map.Entry<String, String> entry : boardState.entrySet()) {
             String position = entry.getKey();
             String piece = entry.getValue();
-
-            if (piece.equals("wP") || piece.equals("bP")) {
-                allPossibleMoves.addAll(pawnLegalMove(position, piece, boardState));
-            } else if (piece.equals("wR") || piece.equals("bR")) {
-                allPossibleMoves.addAll(rookLegalMove(position, piece, boardState));
-            } else if (piece.equals("wB") || piece.equals("bB")) {
-                allPossibleMoves.addAll(bishopLegalMove(position, piece, boardState));
-            } else if (piece.equals("wN") || piece.equals("bN")) {
-                allPossibleMoves.addAll(knightLegalMove(position, piece, boardState));
-            } else if (piece.equals("wQ") || piece.equals("bQ")) {
-                allPossibleMoves.addAll(queenLegalMove(position, piece, boardState));
-            } else if (piece.equals("wK") || piece.equals("bK")) {
-                allPossibleMoves.addAll(kingLegalMove(position, piece, boardState));
+            if (piece != null && piece.startsWith(currentPlayerPrefix)) {
+                if (piece.equals("wP") || piece.equals("bP")) {
+                    allPossibleMoves.addAll(pawnLegalMove(position, piece, boardState));
+                } else if (piece.equals("wR") || piece.equals("bR")) {
+                    allPossibleMoves.addAll(rookLegalMove(position, piece, boardState));
+                } else if (piece.equals("wB") || piece.equals("bB")) {
+                    allPossibleMoves.addAll(bishopLegalMove(position, piece, boardState));
+                } else if (piece.equals("wN") || piece.equals("bN")) {
+                    allPossibleMoves.addAll(knightLegalMove(position, piece, boardState));
+                } else if (piece.equals("wQ") || piece.equals("bQ")) {
+                    allPossibleMoves.addAll(queenLegalMove(position, piece, boardState));
+                } else if (piece.equals("wK") || piece.equals("bK")) {
+                    allPossibleMoves.addAll(kingLegalMove(position, piece, boardState));
+                }
             }
-        }
+        }   
 
         return allPossibleMoves;
     }
 
+    public boolean checkCheckMate(String whosTurn, Map<String, String> boardState) {
+        // Determine the enemy king and player colors
+        String enemyKing = whosTurn.equals("white-turn") ? "bK" : "wK";
+        String opponentColor = whosTurn.equals("white-turn") ? "white" : "black";
+        String currentColor = whosTurn.equals("white-turn") ? "w" : "b";
+    
+        // Find the enemy king's position
+        String kingPosition = null;
+        for (Map.Entry<String, String> entry : boardState.entrySet()) {
+            if (entry.getValue().equals(enemyKing)) {
+                kingPosition = entry.getKey();
+                break;
+            }
+        }
+    
+        // If the king is not on the board, it's not checkmate
+        if (kingPosition == null) {
+            return false;
+        }
+    
+        // Check if the enemy king is currently in check
+        if (!isSquareThreatened(kingPosition, currentColor, boardState)) {
+            return false; // Not in check, so not checkmate
+        }
+    
+        // Generate all legal moves for the enemy player
+        String enemyTurn = whosTurn.equals("white-turn") ? "black-turn" : "white-turn";
+        List<Map<String, String>> allEnemyMoves = legalMove(enemyTurn, boardState);
+    
+        // Simulate each move and check if the king can escape check
+        for (Map<String, String> possibleMove : allEnemyMoves) {
+            // Update the king's position for the current move
+            String newKingPosition = null;
+            for (Map.Entry<String, String> entry : possibleMove.entrySet()) {
+                if (entry.getValue().equals(enemyKing)) {
+                    newKingPosition = entry.getKey();
+                    break;
+                }
+            }
+    
+            // Default to the original king's position if no new position is found
+            if (newKingPosition == null) {
+                newKingPosition = kingPosition;
+            }
+    
+            // Check if the king is still in check after this move
+            if (!isSquareThreatened(newKingPosition, currentColor, possibleMove)) {
+                return false; // Not checkmate, as the king can escape check
+            }
+        }
+    
+        // If all possible moves leave the king in check, it is checkmate
+        return true;
+    }
+    
+
     private List<Map<String, String>> generateNewBoardStates(String value, String position, List<String> legalMoves, Map<String, String> boardState) {
         List<Map<String, String>> newBoardStates = new ArrayList<>();
-        
+
         for (String legalMove : legalMoves) {
-            Map<String, String> newBoardState = new HashMap<>(boardState);
+            Map<String, String> newBoardState = new LinkedHashMap<>(boardState);
 
             newBoardState.put(position, "empty");
-
             newBoardState.put(legalMove, value);
 
             newBoardStates.add(newBoardState);
@@ -50,7 +108,6 @@ public class MoveService {
 
         return newBoardStates;
     }
-
 
     private List<Map<String, String>> pawnLegalMove(String position, String value, Map<String, String> boardState) {
         int row = Character.getNumericValue(position.charAt(1));
@@ -126,8 +183,6 @@ public class MoveService {
             }
         }
     
-        System.out.println("Legal moves for " + value + " at position " + position + ": " + legalMoves);
-        System.out.println(statusMessage);
         return generateNewBoardStates(value, position, legalMoves, boardState);
     }
     
@@ -164,9 +219,6 @@ public class MoveService {
                 }
             }
         }
-    
-        System.out.println("Legal moves for " + value + " at position " + position + ": " + legalMoves);
-        System.out.println(statusMessage);
         return generateNewBoardStates(value, position, legalMoves, boardState);
     }
 
@@ -204,8 +256,6 @@ public class MoveService {
             }
         }
     
-        System.out.println("Legal moves for " + value + " at position " + position + ": " + legalMoves);
-        System.out.println(statusMessage);
         return generateNewBoardStates(value, position, legalMoves, boardState);
     }
     
@@ -238,8 +288,6 @@ public class MoveService {
             }
         }
     
-        System.out.println("Legal moves for " + value + " at position " + position + ": " + legalMoves);
-        System.out.println(statusMessage);
         return generateNewBoardStates(value, position, legalMoves, boardState);
     }
 
@@ -280,8 +328,6 @@ public class MoveService {
             }
         }
     
-        System.out.println("Legal moves for " + value + " at position " + position + ": " + legalMoves);
-        System.out.println(statusMessage);
         return generateNewBoardStates(value, position, legalMoves, boardState);
     }
 
@@ -301,37 +347,36 @@ public class MoveService {
         boardState.put(position, "empty");
         
         for (int[] move : moves) {
+            
             int newRow = row + move[0];
             char newCol = (char)(col + move[1]);
     
             if (newRow >= 1 && newRow <= 8 && newCol >= 'a' && newCol <= 'h') {
                 String newPosition = newCol + String.valueOf(newRow);
+                Map<String, String> newBoardState = new HashMap<>(boardState);
+                newBoardState.put(newPosition, value);
     
-                if (isSquareThreatened(newPosition, opponentColor, boardState)) {
+                if (isSquareThreatened(newPosition, opponentColor, newBoardState)) {
                     continue;
                 }
     
                 if (!boardState.containsKey(newPosition) || boardState.get(newPosition).equals("empty")) {
                     legalMoves.add(newPosition);
-                } 
-                else if ((value.startsWith("w") && boardState.get(newPosition).startsWith("b")) || 
-                         (value.startsWith("b") && boardState.get(newPosition).startsWith("w"))) {
-                    if (!isSquareProtected(newPosition, opponentColor, boardState)) {
-                        legalMoves.add(newPosition);
-                        statusMessage = "Capture possible on " + newPosition;
-                    }
+                } else if ((value.startsWith("w") && boardState.get(newPosition).startsWith("b")) || 
+                           (value.startsWith("b") && boardState.get(newPosition).startsWith("w"))) {
+                    legalMoves.add(newPosition);
+                    statusMessage = "Capture possible on " + newPosition;
                 }
             }
         }
     
         boardState.put(position, value);
     
-        System.out.println("Legal moves for " + value + " at position " + position + ": " + legalMoves);
-        System.out.println(statusMessage);
         return generateNewBoardStates(value, position, legalMoves, boardState);
     }
     
     private boolean isSquareThreatened(String square, String opponentColor, Map<String, String> boardState) {
+
         for (Map.Entry<String, String> entry : boardState.entrySet()) {
             String piecePos = entry.getKey();
             String piece = entry.getValue();
@@ -371,10 +416,6 @@ public class MoveService {
                 return false;
         }
     }    
-    
-    private boolean isSquareProtected(String square, String opponentColor, Map<String, String> boardState) {
-        return isSquareThreatened(square, opponentColor, boardState);
-    }
     
     private boolean isPawnThreatening(String piecePos, String piece, String targetSquare) {
         int pawnRow = Character.getNumericValue(piecePos.charAt(1));
